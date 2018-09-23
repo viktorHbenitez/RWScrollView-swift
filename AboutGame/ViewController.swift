@@ -23,26 +23,62 @@
 import UIKit
 
 class ViewController: UIViewController {
-  @IBOutlet weak var fgScrollView: UIScrollView!
-  @IBOutlet weak var felipeImageView: UIImageView!
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-
-    // animate the wings
-    var animationFrames = [UIImage]()
-    for i in 0...3 {
-      if let image = UIImage(named: "Bird\(i)") {
-        animationFrames.append(image)
-      }
-    }
-
-    felipeImageView.animationImages = animationFrames
-    felipeImageView.animationDuration = 0.4
-    felipeImageView.startAnimating()
+    @IBOutlet weak var fgScrollView: UIScrollView!
+    @IBOutlet weak var felipeImageView: UIImageView!
     
-  }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        // animate the wings
+        var animationFrames = [UIImage]()
+        for i in 0...3 {
+            if let image = UIImage(named: "Bird\(i)") {
+                animationFrames.append(image)
+            }
+        }
+        
+        felipeImageView.animationImages = animationFrames
+        felipeImageView.animationDuration = 0.4
+        felipeImageView.startAnimating()
+        
+        
+        // 1. Add Observers
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: .UIKeyboardWillHide, object: nil)
+        
+        
+    }
+    
+    // Remove observers
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // invoke the method to adjust the keyboard insets
+    @objc func keyboardWillShow(notification: NSNotification) {
+        adjustInsetForKeyboardShow(show: true, notification: notification)
+    }
+    
+    @objc func keyboardWillHide(notification: NSNotification) {
+        adjustInsetForKeyboardShow(show: false, notification: notification)
+    }
+    
+    
+    func adjustInsetForKeyboardShow(show: Bool, notification: NSNotification) {
 
+        // Contains the height of the keyboad frame
+        let userInfo = notification.userInfo ?? [:]  // get the user info from the notification
+        let keyboardFrame = (userInfo[UIKeyboardFrameBeginUserInfoKey] as! NSValue).cgRectValue
+        
+        let adjustment = (keyboardFrame.height * (show ? 1 : -1)) // inset keyboard height frame or remove the insets
+        
+        //Add padding to the top inset scrollview
+        fgScrollView.contentInset.bottom += adjustment
+        fgScrollView.scrollIndicatorInsets.bottom += adjustment
+    }
+    
+    
+    
 }
 
 extension ViewController: UIScrollViewDelegate {
